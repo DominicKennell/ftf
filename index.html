@@ -1052,6 +1052,79 @@ function renderShopMode() {
 }
 
 
+
+// ── SAVINGS TAB ───────────────────────────────────────────────
+function tabSavings(root) {
+  var b=getBS(), davg=M.reduce(function(s,m){return s+(m.cost||2.5);},0)/(M.length||1);
+  var wF=Math.round((davg+b.cost+0.5)*7*P.people), wO=Math.round(P.people*7*18);
+  var wS=wO-wF, yS=Math.round(wS*52);
+  root.innerHTML='<p class="sh mb8">Your Savings</p>'
+    +'<div class="card card-dark mb12" style="padding:22px 18px;text-align:center">'
+    +'<p class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em">Projected yearly saving</p>'
+    +'<div class="serif" style="font-size:48px;font-weight:700;color:var(--gold);line-height:1;margin:8px 0 4px">£'+yS.toLocaleString()+'</div>'
+    +'<p class="muted" style="font-size:12px">vs buying every meal out</p>'
+    +'</div>'
+    +'<div class="grid2 mb12">'
+    +[{l:'Per week',v:'£'+wS,c:'var(--gold)'},{l:'Per month',v:'£'+Math.round(wS*4),c:'var(--sage)'},{l:'Breakfast/week',v:'£'+(b.cost*P.people*7).toFixed(2),c:'var(--text)'},{l:'Lunch cost',v:'£0',c:'var(--sage)'}].map(function(s){
+      return '<div class="card" style="padding:11px 12px"><p class="muted" style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">'+s.l+'</p><p style="font-size:20px;font-weight:700;color:'+s.c+'">'+s.v+'</p></div>';
+    }).join('')+'</div>'
+    +'<div class="card card-sage" style="padding:12px 13px"><p class="sage" style="font-size:13px;line-height:1.7">£'+yS.toLocaleString()+' is <b style="color:var(--text)">'+Math.round(yS/600)+' city breaks</b> or <b style="color:var(--text)">'+Math.round(yS/35)+' restaurant dinners</b>.</p></div>';
+}
+
+// ── SETTINGS TAB ──────────────────────────────────────────────
+function tabSettings(root) {
+  var b=getBS(), dl=dislikeLabels();
+  root.innerHTML='<p class="sh mb14">Your Profile</p>'
+    +'<div style="display:flex;flex-direction:column;gap:9px">'
+    +'<div class="card" style="padding:11px 13px"><span class="lbl">Household</span><p style="font-size:13px;font-weight:600">'+P.people+' '+(P.people===1?'person':'people')+' · £'+P.budget+'/person/week</p></div>'
+    +'<div class="card" style="padding:11px 13px"><span class="lbl">Breakfast</span><p>'+b.icon+' '+b.label+'</p></div>'
+    +(P.diets.length?'<div class="card" style="padding:11px 13px"><span class="lbl">Dietary</span><div style="display:flex;gap:6px;flex-wrap:wrap">'+P.diets.map(function(id){var d=DIETS.find(function(x){return x.id===id;});return d?'<span class="pill" style="background:rgba(126,171,138,0.12);color:var(--sage);border:1px solid rgba(126,171,138,0.2)">'+d.icon+' '+d.label+'</span>':'';}).join('')+'</div></div>':'')
+    +(P.allergens.length?'<div class="card card-rose" style="padding:11px 13px"><span class="lbl" style="color:var(--rose)">Allergens excluded</span><p class="rose" style="font-size:12px">'+P.allergens.join(', ')+'</p></div>':'')
+    +(dl.length?'<div class="card" style="padding:11px 13px"><span class="lbl">Will not eat</span><p class="text2" style="font-size:12px">'+dl.join(', ')+'</p></div>':'')
+    +'<div class="card" style="padding:11px 13px;border-color:var(--sky-bd);background:var(--sky-bg)">'
+    +'<span class="lbl" style="color:var(--sky)">Want fully automatic basket filling?</span>'
+    +'<p style="font-size:12px;color:var(--sky);line-height:1.6">The free Chrome extension adds every item automatically. <a href="https://chromewebstore.google.com" target="_blank" style="color:var(--sky);font-weight:600">Get it free →</a></p>'
+    +'</div>'
+    +'<button class="btn btn-ghost mt8" id="s-reset">Reset & redo setup</button>'
+    +'</div>';
+
+  g('s-reset').addEventListener('click',function(){
+    if(confirm('Reset everything and start over?')){
+      localStorage.removeItem('ftf_p'); localStorage.removeItem('ftf_m');
+      P=null; M=[]; OB={step:0,people:2,bfId:'oats',diets:[],allergens:[],dislikes:[],budget:40};
+      g('app-nav').classList.remove('visible');
+      showPage('page-landing');
+    }
+  });
+}
+
+// ── NAV BUTTONS ───────────────────────────────────────────────
+qsa('.nav-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){goTab(btn.dataset.tab);});
+});
+
+// ── BACK BUTTON (shopping mode) ───────────────────────────────
+g('shop-mode-back').addEventListener('click',function(){
+  showPage('page-app');
+  goTab('shop');
+});
+
+// ── LANDING BUTTON ────────────────────────────────────────────
+g('landing-start').addEventListener('click',function(){
+  showPage('page-onboard');
+  OB.step=0;
+  obRender();
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  loadData();
+  if(P && M && M.length){
+    startApp();
+  } else {
+    showPage('page-landing');
+  }
+});
 </script>
 </body>
 </html>
