@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Fridge to Fork — Plan meals. Save money. Shop smart.</title>
+<meta name="description" content="Free weekly meal planner. Plan breakfast, lunch and dinner, generate your shopping list, and shop Tesco item by item in minutes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ──────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0C0A08;color:#F0EAE0;font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+button,input,select,textarea{font-family:inherit}
+input,textarea{cursor:text}
+button{cursor:pointer}
+img{max-width:100%}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
+
+/* ── TOKENS ────────────────────────────────────────────────── */
+:root{
+  --bg:#0C0A08; --s1:#181410; --s2:#201B15; --s3:#2A2318;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+  --gold:#E9A83A; --gold-bg:rgba(233,168,58,0.10); --gold-bd:rgba(233,168,58,0.28);
+  --sage:#7EAB8A; --sage-bg:rgba(126,171,138,0.10); --sage-bd:rgba(126,171,138,0.28);
+  --sky:#6EB0D4;  --sky-bg:rgba(110,176,212,0.10);  --sky-bd:rgba(110,176,212,0.28);
+  --rose:#D47E8B; --rose-bg:rgba(212,126,139,0.10); --rose-bd:rgba(212,126,139,0.28);
+  --text:#F0EAE0; --text2:#B0A898; --muted:#706860; --red:#E05252;
+  --serif:'Playfair Display',Georgia,serif;
+  --radius:12px; --radius-lg:16px;
+  --max:480px;
+}
+
+/* ── LAYOUT ────────────────────────────────────────────────── */
+.app{display:flex;flex-direction:column;min-height:100vh;max-width:var(--max);margin:0 auto;position:relative}
+.page{display:none;flex-direction:column;min-height:100vh;animation:fadeUp 0.25s ease}
+.page.active{display:flex}
+.topbar{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;background:var(--bg);z-index:100}
+.main{flex:1;padding:16px;overflow-y:auto;padding-bottom:90px}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--max);background:var(--s1);border-top:1px solid var(--border);display:none;z-index:100}
+.nav.visible{display:flex}
+.nav-btn{flex:1;background:transparent;border:none;padding:9px 0 11px;display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0.3;transition:opacity 0.15s;cursor:pointer}
+.nav-btn.on{opacity:1}
+.nav-icon{font-size:16px}
+.nav-lbl{font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted)}
+.nav-btn.on .nav-lbl{color:var(--gold)}
+.logo{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:-0.01em}
+.logo b{color:var(--gold);font-weight:700}
+
+/* ── TYPOGRAPHY ────────────────────────────────────────────── */
+.serif{font-family:var(--serif)}
+.sh{font-size:16px;font-weight:700;font-family:var(--serif);margin-bottom:3px}
+.shsub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px}
+.muted{color:var(--muted)}
+.gold{color:var(--gold)}
+.sage{color:var(--sage)}
+.rose{color:var(--rose)}
+.text2{color:var(--text2)}
+
+/* ── CARDS ─────────────────────────────────────────────────── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.card-dark{background:linear-gradient(135deg,#1D1508,#2A1D08);border-color:var(--gold-bd)}
+.card-rose{background:var(--rose-bg);border-color:var(--rose-bd)}
+.card-sage{background:var(--sage-bg);border-color:var(--sage-bd)}
+.card-gold{background:var(--gold-bg);border-color:var(--gold-bd)}
+
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px 16px;border-radius:var(--radius);border:none;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.15s,transform 0.1s;text-decoration:none;text-align:center}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.35;cursor:default}
+.btn-gold{background:var(--gold);color:#0C0A08}
+.btn-sage{background:var(--sage);color:#0C0A08}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-surface{background:var(--s2);color:var(--text2);border:1px solid var(--border)}
+.btn-rose{background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-bd)}
+.btn-sm{padding:8px 14px;font-size:12px;width:auto}
+.btn-lg{padding:16px 20px;font-size:16px;border-radius:14px}
+
+/* ── FORM ──────────────────────────────────────────────────── */
+.inp{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:14px;padding:11px 13px;outline:none;transition:border 0.15s}
+.inp:focus{border-color:var(--gold-bd)}
+.inp::placeholder{color:var(--muted)}
+.choice{display:flex;align-items:center;width:100%;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--s2);color:var(--text);font-size:13px;cursor:pointer;text-align:left;transition:all 0.15s;margin-bottom:8px}
+.choice.on{border-color:var(--gold-bd);background:var(--gold-bg);color:var(--gold);font-weight:600}
+
+/* ── PROGRESS ──────────────────────────────────────────────── */
+.prog-wrap{height:2px;background:rgba(255,255,255,0.07);border-radius:1px}
+.prog-bar{height:100%;background:var(--gold);border-radius:1px;transition:width 0.35s ease}
+
+/* ── TAG / PILL ────────────────────────────────────────────── */
+.tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;display:inline-block}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:20px}
+
+/* ── GRID ──────────────────────────────────────────────────── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.row{display:flex;align-items:center;gap:10px}
+.row-sb{display:flex;align-items:center;justify-content:space-between}
+
+/* ── SPACING ───────────────────────────────────────────────── */
+.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}
+.mb12{margin-bottom:12px}.mb14{margin-bottom:14px}.mb16{margin-bottom:16px}
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}
+
+/* ── ANIMATIONS ────────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.fade{animation:fadeUp 0.2s ease}
+.pulse{animation:pulse 1.5s infinite}
+
+/* ── LANDING PAGE ──────────────────────────────────────────── */
+#page-landing{background:var(--bg)}
+.hero{padding:48px 24px 32px;text-align:center}
+.hero-eyebrow{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;font-weight:600;margin-bottom:16px}
+.hero-title{font-family:var(--serif);font-size:42px;font-weight:700;line-height:1.15;margin-bottom:16px}
+.hero-title span{color:var(--gold)}
+.hero-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:340px;margin:0 auto 32px}
+.hero-saving{display:inline-block;font-family:var(--serif);font-size:56px;font-weight:700;color:var(--gold);line-height:1}
+.hero-saving-label{font-size:13px;color:var(--muted);margin-top:4px}
+.features{padding:0 16px 40px;display:flex;flex-direction:column;gap:10px}
+.feature-item{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:flex-start;gap:14px}
+.feature-icon{font-size:26px;flex-shrink:0;margin-top:2px}
+.feature-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.feature-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.landing-cta{padding:0 16px 60px}
+
+/* ── SHOPPING MODE ─────────────────────────────────────────── */
+#page-shopping{background:var(--bg)}
+.shop-progress{padding:16px 16px 0}
+.shop-item-card{margin:16px;background:var(--s1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.shop-item-name{padding:20px 20px 12px;font-family:var(--serif);font-size:22px;font-weight:700;line-height:1.2}
+.shop-item-meta{padding:0 20px 16px;color:var(--muted);font-size:12px}
+.shop-tesco-btn{display:block;margin:0 16px;padding:14px 16px;background:var(--gold);color:#0C0A08;font-weight:700;font-size:15px;border-radius:var(--radius);text-align:center;text-decoration:none;border:none;cursor:pointer;width:calc(100% - 32px)}
+.shop-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px}
+.shop-item-list{padding:16px}
+.shop-list-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.shop-list-item:last-child{border-bottom:none}
+.shop-check{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--muted);background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;cursor:pointer}
+.shop-check.done{background:var(--sage);border-color:var(--sage)}
+
+/* ── LANDING DECORATION ────────────────────────────────────── */
+.saving-hero{background:linear-gradient(135deg,#1D1508,#2A1D08);border:1px solid var(--gold-bd);border-radius:20px;padding:28px 20px;text-align:center;margin:0 16px 32px}
+
+/* ── INSTALL BANNER ────────────────────────────────────────── */
+.install-banner{background:var(--sky-bg);border:1px solid var(--sky-bd);border-radius:var(--radius);padding:14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
+.install-banner-text{flex:1;font-size:12px;color:var(--sky);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── LANDING ─────────────────────────────────────────────── -->
+<div id="page-landing" class="page active">
+  <div class="hero">
+    <div class="hero-eyebrow">Free · No account · Works on any device</div>
+    <h1 class="hero-title">Eat well.<br>Spend <span>less</span>.</h1>
+    <p class="hero-sub">Plan all 3 meals every week, build your shopping list, and shop Tesco item by item in minutes.</p>
+    <div class="saving-hero">
+      <div class="hero-saving">£1,000+</div>
+      <div class="hero-saving-label">saved per year vs eating out</div>
+    </div>
+  </div>
+  <div class="features">
+    <div class="feature-item">
+      <div class="feature-icon">🍳</div>
+      <div><div class="feature-title">Breakfast, lunch & dinner — all planned</div><div class="feature-desc">Pick your breakfast once. Lunches are free from last night's leftovers. Dinners generated around your diet and budget.</div></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🥦</div>
+      <div><div class="feature-title">Respects your dietary needs</div><div class="feature-desc">Vegan, halal, gluten-free, dairy-free, allergens, things you just don't like — all filtered out automatically.</div></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🛒</div>
+      <div><div class="feature-title">Guided Tesco shopping</div><div class="feature-desc">Opens each item on Tesco one by one. You add it, tap next. Done in minutes. Always check your basket before checkout.</div></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">💰</div>
+      <div><div class="feature-title">See exactly how much you're saving</div><div class="feature-desc">Real numbers. What you spend vs what you'd spend ordering out. Every week.</div></div>
+    </div>
+  </div>
+  <div class="landing-cta">
+    <button class="btn btn-gold btn-lg mb10" id="landing-start">✦ Plan my week — it's free</button>
+    <p style="text-align:center;font-size:12px;color:var(--muted)">No account. No app. Works in your browser.</p>
+  </div>
+</div>
+
+<!-- ── ONBOARDING ───────────────────────────────────────────── -->
+<div id="page-onboard" class="page">
+  <div class="topbar">
+    <div class="logo">fridge<b>to</b>fork</div>
+    <span id="ob-step-lbl" style="font-size:12px;color:var(--muted)"></span>
+  </div>
+  <div style="padding:10px 16px 0;flex-shrink:0">
+    <div class="prog-wrap"><div class="prog-bar" id="ob-prog"></div></div>
+  </div>
+  <div class="main" id="ob-main"></div>
+  <div style="padding:14px 16px;border-top:1px solid var(--border);background:var(--bg);position:sticky;bottom:0">
+    <button class="btn btn-gold" id="ob-next"></button>
+    <button class="btn btn-ghost mt8" id="ob-back" style="display:none">← Back</button>
+  </div>
+</div>
+
+<!-- ── MAIN APP ─────────────────────────────────────────────── -->
+<div id="page-app" class="page">
+  <div class="topbar">
+    <div class="logo">fridge<b>to</b>fork</div>
+    <div id="app-topbar-right"></div>
+  </div>
+  <div class="main" id="app-main"></div>
+  <nav class="nav" id="app-nav">
+    <button class="nav-btn on" data-tab="home"><span class="nav-icon">🏠</span><span class="nav-lbl">Home</span></button>
+    <button class="nav-btn" data-tab="plan"><span class="nav-icon">📅</span><span class="nav-lbl">Plan</span></button>
+    <button class="nav-btn" data-tab="shop"><span class="nav-icon">🛒</span><span class="nav-lbl">Shop</span></button>
+    <button class="nav-btn" data-tab="savings"><span class="nav-icon">💰</span><span class="nav-lbl">Savings</span></button>
+    <button class="nav-btn" data-tab="settings"><span class="nav-icon">⚙</span><span class="nav-lbl">Profile</span></button>
+  </nav>
+</div>
+
+<!-- ── SHOPPING MODE (full screen guided) ──────────────────── -->
+<div id="page-shopping" class="page">
+  <div class="topbar">
+    <button id="shop-mode-back" style="background:transparent;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0">← Back</button>
+    <div class="logo">fridge<b>to</b>fork</div>
+    <span id="shop-mode-count" style="font-size:12px;color:var(--muted)"></span>
+  </div>
+  <div id="shop-mode-content" style="flex:1;overflow-y:auto;padding-bottom:20px"></div>
+</div>
+
+</div><!-- end .app -->
+
+<script>
+'use strict';
+
+// ── MEAL LIBRARY ──────────────────────────────────────────────
+var MEALS = [
+  {id:1,  d:'Pasta Arrabiata',             l:'Pasta salad box',       t:'20 min',cost:1.60,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','halal']},
+  {id:2,  d:'Black Bean Tacos',            l:'Bean quesadilla',       t:'25 min',cost:1.60,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','halal']},
+  {id:3,  d:'Lentil Dhal & Rice',          l:'Dhal soup pot',         t:'25 min',cost:1.40,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:4,  d:'Tomato Pasta Bake',           l:'Pasta salad',           t:'30 min',cost:1.70,tag:'Veggie', flags:['veggie','nut-free','halal']},
+  {id:5,  d:'Spinach & Chickpea Curry',    l:'Curry rice pot',        t:'25 min',cost:1.60,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:6,  d:'Margherita Pizza',            l:'Pizza & salad',         t:'35 min',cost:2.00,tag:'Veggie', flags:['veggie','nut-free']},
+  {id:7,  d:'Veggie Fried Rice',           l:'Cold rice box',         t:'20 min',cost:1.50,tag:'Quick',  flags:['veggie','dairy-free','nut-free','halal','gluten-free']},
+  {id:8,  d:'Sweet Potato & Lentil Soup',  l:'Soup pot',              t:'30 min',cost:1.40,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:9,  d:'Baked Eggs in Tomato Sauce',  l:'Egg wrap',              t:'20 min',cost:1.40,tag:'Quick',  flags:['veggie','gluten-free','nut-free','halal','dairy-free']},
+  {id:10, d:'Shakshuka',                   l:'Egg toast box',         t:'20 min',cost:1.50,tag:'Quick',  flags:['veggie','gluten-free','dairy-free','nut-free','halal']},
+  {id:11, d:'Black Bean Chilli',           l:'Chilli rice pot',       t:'30 min',cost:1.50,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:12, d:'Moroccan Chickpea Stew',      l:'Stew pot',              t:'30 min',cost:1.60,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:13, d:'Thai Green Veg Curry',        l:'Curry rice pot',        t:'25 min',cost:1.80,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','gluten-free']},
+  {id:14, d:'Falafel & Hummus Bowl',       l:'Falafel wrap',          t:'20 min',cost:1.80,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','halal']},
+  {id:15, d:'Roasted Veg & Hummus Bowl',   l:'Hummus wrap',           t:'30 min',cost:1.60,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','gluten-free']},
+  {id:16, d:'Stuffed Peppers',             l:'Pepper & rice',         t:'40 min',cost:2.00,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:17, d:'Jacket Potato & Beans',       l:'Jacket potato',         t:'60 min',cost:1.20,tag:'Veggie', flags:['veggie','vegan','gluten-free','dairy-free','nut-free','halal']},
+  {id:18, d:'Minestrone Soup',             l:'Soup pot',              t:'35 min',cost:1.50,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','halal']},
+  {id:19, d:'Salmon Noodle Bowl',          l:'Cold noodle box',       t:'20 min',cost:3.20,tag:'Protein',flags:['fish','gluten-free','dairy-free','nut-free','halal']},
+  {id:20, d:'Baked Salmon & Veg',          l:'Salmon rice salad',     t:'25 min',cost:3.40,tag:'Protein',flags:['fish','gluten-free','dairy-free','nut-free','halal','low-carb']},
+  {id:21, d:'Cod & Sweet Potato Curry',    l:'Curry pot',             t:'30 min',cost:2.90,tag:'Fish',   flags:['fish','gluten-free','dairy-free','nut-free','halal']},
+  {id:22, d:'Tuna Pasta Bake',             l:'Pasta salad',           t:'30 min',cost:2.20,tag:'Fish',   flags:['fish','nut-free']},
+  {id:23, d:'Lemon Chicken Tray Bake',     l:'Chicken wrap',          t:'40 min',cost:2.80,tag:'Batch',  flags:['meat','gluten-free','dairy-free','nut-free','halal','low-carb']},
+  {id:24, d:'Thai Green Chicken Curry',    l:'Curry rice pot',        t:'30 min',cost:2.60,tag:'Quick',  flags:['meat','gluten-free','dairy-free','nut-free','halal']},
+  {id:25, d:'Slow Roast Chicken',          l:'Chicken sandwiches',    t:'90 min',cost:3.20,tag:'Batch',  flags:['meat','gluten-free','dairy-free','nut-free','halal','low-carb']},
+  {id:26, d:'Chicken & Rice Tray Bake',    l:'Chicken rice bowl',     t:'40 min',cost:2.60,tag:'Batch',  flags:['meat','gluten-free','dairy-free','nut-free','halal']},
+  {id:27, d:'Chicken Tikka Masala',        l:'Curry pot',             t:'35 min',cost:2.70,tag:'Batch',  flags:['meat','gluten-free','nut-free','halal']},
+  {id:28, d:'Chicken Stir Fry Noodles',    l:'Cold noodle box',       t:'20 min',cost:2.40,tag:'Quick',  flags:['meat','dairy-free','nut-free','halal']},
+  {id:29, d:'Chicken Fajitas',             l:'Fajita wrap',           t:'25 min',cost:2.60,tag:'Quick',  flags:['meat','dairy-free','nut-free','halal']},
+  {id:30, d:'One-Pot Chicken & Veg',       l:'Chicken soup',          t:'35 min',cost:2.50,tag:'One-pot',flags:['meat','gluten-free','dairy-free','nut-free','halal','low-carb']},
+  {id:31, d:'Beef Bolognese',              l:'Pasta salad',           t:'40 min',cost:2.80,tag:'Batch',  flags:['meat','dairy-free','nut-free','halal']},
+  {id:32, d:'Beef & Veg Stew',             l:'Stew with bread',       t:'60 min',cost:2.90,tag:'Batch',  flags:['meat','gluten-free','dairy-free','nut-free','halal','low-carb']},
+  {id:33, d:'Beef Tacos',                  l:'Taco salad box',        t:'25 min',cost:2.80,tag:'Quick',  flags:['meat','gluten-free','dairy-free','nut-free','halal']},
+  {id:34, d:'Sausage & Bean One-Pot',      l:'Bean soup',             t:'30 min',cost:2.00,tag:'One-pot',flags:['meat','gluten-free','dairy-free','nut-free']},
+  {id:35, d:'Meatball Pasta',              l:'Meatball sub',          t:'30 min',cost:2.60,tag:'Quick',  flags:['meat','nut-free','halal']},
+  {id:36, d:'Turkey Mince Lettuce Wraps',  l:'Lettuce wrap box',      t:'20 min',cost:2.40,tag:'Low-carb',flags:['meat','gluten-free','dairy-free','nut-free','low-carb']},
+  {id:37, d:'Chicken Caesar Salad',        l:'Caesar wrap',           t:'15 min',cost:2.40,tag:'Protein',flags:['meat','gluten-free','nut-free','low-carb']},
+  {id:38, d:'Sweet Potato Dhal',           l:'Dhal pot',              t:'30 min',cost:1.50,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','halal','gluten-free']},
+  {id:39, d:'Paneer Tikka Masala',         l:'Curry pot',             t:'30 min',cost:2.10,tag:'Veggie', flags:['veggie','gluten-free','nut-free']},
+  {id:40, d:'Egg Fried Rice',              l:'Cold rice box',         t:'15 min',cost:1.20,tag:'Quick',  flags:['veggie','dairy-free','nut-free','gluten-free']},
+  {id:41, d:'Quesadillas & Salsa',         l:'Quesadilla slice',      t:'15 min',cost:1.70,tag:'Quick',  flags:['veggie','nut-free']},
+  {id:42, d:'Greek Salad with Feta',       l:'Greek salad box',       t:'10 min',cost:1.80,tag:'Quick',  flags:['veggie','gluten-free','nut-free','low-carb']},
+  {id:43, d:'Stir Fry Noodles & Veg',      l:'Cold noodle box',       t:'20 min',cost:1.70,tag:'Vegan',  flags:['veggie','vegan','dairy-free','nut-free','halal']},
+  {id:44, d:'Prawn Stir Fry & Rice',       l:'Prawn rice pot',        t:'20 min',cost:2.80,tag:'Quick',  flags:['fish','gluten-free','dairy-free','nut-free']},
+  {id:45, d:'Chicken Fried Rice',          l:'Cold rice box',         t:'20 min',cost:2.30,tag:'Quick',  flags:['meat','gluten-free','dairy-free','nut-free','halal']},
+  {id:46, d:'Beef & Broccoli Stir Fry',    l:'Cold rice box',         t:'20 min',cost:2.70,tag:'Quick',  flags:['meat','gluten-free','dairy-free','nut-free','halal']},
+  {id:47, d:'Pork Sausage Casserole',      l:'Casserole pot',         t:'45 min',cost:2.40,tag:'Batch',  flags:['meat','gluten-free','dairy-free','nut-free']},
+  {id:48, d:'Leek & Potato Soup',          l:'Soup & bread',          t:'30 min',cost:1.30,tag:'Veggie', flags:['veggie','vegan','dairy-free','nut-free','gluten-free']},
+  {id:49, d:'Halloumi Tray Bake',          l:'Halloumi wrap',         t:'35 min',cost:2.20,tag:'Veggie', flags:['veggie','gluten-free','nut-free']},
+  {id:50, d:'Smoked Salmon Scrambled Eggs',l:'Salmon bagel',          t:'10 min',cost:2.80,tag:'Quick',  flags:['fish','gluten-free','nut-free','low-carb']},
+];
+
+var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+var DIETS = [
+  {id:'vegetarian', label:'Vegetarian',  icon:'🥦', desc:'No meat or fish',         color:'#7EAB8A'},
+  {id:'vegan',      label:'Vegan',       icon:'🌱', desc:'No animal products',       color:'#7EAB8A'},
+  {id:'pescatarian',label:'Pescatarian', icon:'🐟', desc:'Fish yes, meat no',        color:'#6EB0D4'},
+  {id:'gluten-free',label:'Gluten-free', icon:'🌾', desc:'No wheat, barley or rye',  color:'#E9A83A'},
+  {id:'dairy-free', label:'Dairy-free',  icon:'🥛', desc:'No milk or cheese',        color:'#6EB0D4'},
+  {id:'nut-free',   label:'Nut-free',    icon:'🥜', desc:'All nuts excluded',         color:'#D47E8B'},
+  {id:'halal',      label:'Halal',       icon:'☪',  desc:'Halal certified only',      color:'#E9A83A'},
+  {id:'low-carb',   label:'Low-carb',    icon:'🥩', desc:'High protein, fewer carbs', color:'#E9A83A'},
+];
+
+var ALLERGENS = ['Celery','Eggs','Fish','Lupin','Milk','Molluscs','Mustard','Tree nuts','Peanuts','Sesame','Soya','Sulphites'];
+
+var DISLIKES = [
+  {id:'mushrooms',    label:'Mushrooms',    icon:'🍄'},
+  {id:'olives',       label:'Olives',       icon:'🫒'},
+  {id:'anchovies',    label:'Anchovies',    icon:'🐟'},
+  {id:'blue-cheese',  label:'Blue cheese',  icon:'🧀'},
+  {id:'liver',        label:'Liver',        icon:'🥩'},
+  {id:'beetroot',     label:'Beetroot',     icon:'🟣'},
+  {id:'aubergine',    label:'Aubergine',    icon:'🍆'},
+  {id:'courgette',    label:'Courgette',    icon:'🥒'},
+  {id:'coriander',    label:'Coriander',    icon:'🌿'},
+  {id:'lamb',         label:'Lamb',         icon:'🐑'},
+  {id:'tofu',         label:'Tofu',         icon:'⬜'},
+  {id:'sprouts',      label:'Sprouts',      icon:'🥦'},
+  {id:'sweetcorn',    label:'Sweetcorn',    icon:'🌽'},
+  {id:'prawns',       label:'Prawns',       icon:'🦐'},
+  {id:'marmite',      label:'Marmite',      icon:'🫙'},
+  {id:'black-pudding',label:'Black pudding',icon:'⚫'},
+];
+
+var BREAKFASTS = [
+  {id:'oats',    label:'Overnight oats',         icon:'🥣', desc:'Prep 5 jars Sunday. Grab all week.', time:'5 min prep', cost:0.40,
+   items:['Porridge oats (1kg)','Bananas x6','Honey (jar)','Milk (2L)'],
+   veganItems:['Porridge oats (1kg)','Bananas x6','Maple syrup (jar)','Oat milk (1L)'],
+   dairyFreeItems:['Porridge oats (1kg)','Bananas x6','Honey (jar)','Oat milk (1L)'],
+   excludes:[]},
+  {id:'eggs',    label:'Scrambled eggs & toast',  icon:'🍳', desc:'5 min, high protein.',               time:'5 min',      cost:0.70,
+   items:['Free-range eggs x12','Wholemeal bread','Butter (250g)'],
+   veganItems:null,
+   dairyFreeItems:['Free-range eggs x12','Wholemeal bread','Dairy-free spread'],
+   excludes:['vegan']},
+  {id:'yogurt',  label:'Greek yogurt & fruit',    icon:'🫙', desc:'No cooking. 30 seconds.',            time:'2 min',      cost:0.65,
+   items:['Greek yogurt (1kg)','Frozen berries (500g)','Honey (jar)'],
+   veganItems:['Coconut yogurt (500g)','Frozen berries (500g)','Maple syrup (jar)'],
+   dairyFreeItems:['Coconut yogurt (500g)','Frozen berries (500g)','Honey (jar)'],
+   excludes:[]},
+  {id:'smoothie',label:'Banana smoothie',          icon:'🥤', desc:'Blend and go. 90 seconds.',          time:'2 min',      cost:0.55,
+   items:['Bananas x8','Porridge oats (500g)','Milk (2L)'],
+   veganItems:['Bananas x8','Porridge oats (500g)','Oat milk (1L)'],
+   dairyFreeItems:['Bananas x8','Porridge oats (500g)','Oat milk (1L)'],
+   excludes:[]},
+  {id:'toast',   label:'Toast & peanut butter',   icon:'🍞', desc:'Under 3 minutes.',                   time:'3 min',      cost:0.30,
+   items:['Wholemeal bread','Peanut butter (340g)','Bananas x6'],
+   veganItems:['Wholemeal bread','Peanut butter (340g)','Bananas x6'],
+   dairyFreeItems:['Wholemeal bread','Peanut butter (340g)','Bananas x6'],
+   excludes:['nut-free']},
+  {id:'granola', label:'Granola & milk',           icon:'🌾', desc:'Pour and go. Zero effort.',          time:'1 min',      cost:0.50,
+   items:['Granola (750g)','Milk (2L)','Frozen berries (500g)'],
+   veganItems:['Granola (750g)','Oat milk (1L)','Frozen berries (500g)'],
+   dairyFreeItems:['Granola (750g)','Oat milk (1L)','Frozen berries (500g)'],
+   excludes:[]},
+];
+
+// ── STATE ─────────────────────────────────────────────────────
+var P = null;
+var M = [];
+var TAB = 'home';
+var OB = {step:0, people:2, bfId:'oats', diets:[], allergens:[], dislikes:[], budget:40};
+var shopChecked = {};
+var shopModeIndex = 0;
+var shopModeItems = [];
+var tescoWin = null;
+
+// ── STORAGE ───────────────────────────────────────────────────
+function save() { try { localStorage.setItem('ftf_p', JSON.stringify(P)); localStorage.setItem('ftf_m', JSON.stringify(M)); } catch(e){} }
+function loadData() {
+  try {
+    var p = localStorage.getItem('ftf_p'); if(p) P = JSON.parse(p);
+    var m = localStorage.getItem('ftf_m'); if(m) M = JSON.parse(m);
+  } catch(e){}
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function g(id){ return document.getElementById(id); }
+function qs(s,r){ return (r||document).querySelector(s); }
+function qsa(s,r){ return Array.from((r||document).querySelectorAll(s)); }
+function h(html){ var d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
+
+function dislikeLabels(prof) {
+  return ((prof||P||{}).dislikes||[]).map(function(id){
+    var c=DISLIKES.find(function(d){return d.id===id;});
+    return c?c.label:(id.charAt(0).toUpperCase()+id.slice(1));
+  });
+}
+
+function getBS(prof) {
+  var id=(prof||P||{}).bfId||'oats';
+  return BREAKFASTS.find(function(b){return b.id===id;})||BREAKFASTS[0];
+}
+
+function bsItems(bObj, prof) {
+  var diets=((prof||P||{}).diets||[]);
+  if(diets.indexOf('vegan')!==-1 && bObj.veganItems) return bObj.veganItems;
+  if(diets.indexOf('dairy-free')!==-1 && bObj.dairyFreeItems) return bObj.dairyFreeItems;
+  return bObj.items;
+}
+
+function compatibleBreakfasts(diets) {
+  return BREAKFASTS.filter(function(b){
+    return !b.excludes.some(function(ex){return diets.indexOf(ex)!==-1;});
+  });
+}
+
+function hasBanned(text, banned) {
+  var t=text.toLowerCase();
+  return banned.some(function(b){var lc=b.toLowerCase();return t.indexOf(lc)!==-1||t.indexOf(lc+'s')!==-1;});
+}
+
+// ── TESCO PRODUCT LINKS ──────────────────────────────────────
+// Direct product page IDs where known; search fallback otherwise
+var TESCO_PRODUCTS = {
+  // ── BREAKFAST ──
+  'Porridge oats (1kg)':          '254853776',  // Tesco Scottish Oats 1kg
+  'Porridge oats (500g)':         '254853776',
+  'Bananas x6':                   null,          // loose produce — no fixed ID
+  'Bananas x8':                   null,
+  'Honey (jar)':                  '254850860',   // Tesco Clear Honey 454g
+  'Maple syrup (jar)':            null,
+  'Milk (2L)':                    '254656543',   // Tesco Semi-Skimmed 4 pints (2.27L)
+  'Oat milk (1L)':                '280832278',   // Alpro Oat Original 1L
+  'Free-range eggs x12':          '250802613',   // Tesco Free Range Medium 6pk
+  'Free-range eggs x6':           '250802613',
+  'Wholemeal bread':              '299425783',   // Tesco Wholemeal 800g
+  'Butter (250g)':                '290921181',   // Tesco British Unsalted Butter 250g
+  'Dairy-free spread':            null,
+  'Greek yogurt (1kg)':           '296360788',   // Tesco Greek Style 1kg
+  'Coconut yogurt (500g)':        null,
+  'Frozen berries (500g)':        '258759778',   // Tesco Frozen Summer Fruits 500g
+  'Granola (750g)':               '275944625',   // Tesco Superberry Granola 500g
+  'Peanut butter (340g)':         '264769626',   // Tesco Smooth Peanut Butter 340g
+
+  // ── MEAT & FISH ──
+  'Chicken thighs (1kg)':         '304380429',   // Tesco British Chicken Thigh Fillets 1kg
+  'Salmon fillets x2':            null,
+  'Beef mince (500g)':            '297616946',   // Tesco 5% Fat Beef Mince 500g
+  'Pork sausages x8':             null,
+  'Turkey mince (500g)':          null,
+  'King prawns (300g)':           null,
+  'Cod fillets x2':               null,
+  'Diced lamb (500g)':            null,
+
+  // ── PASTA / RICE / NOODLES ──
+  'Pasta (500g)':                 '254878482',   // Tesco Penne 500g
+  'Pasta (500g) [GF]':            '256876734',   // Tesco Free From Penne 500g
+  'Basmati rice (1kg)':           '258183865',   // Tesco Easy Cook Basmati 1kg
+  'Egg noodles (300g)':           null,
+  'Tortilla wraps x8':            '303350352',   // Tesco Plain Tortilla Wraps 8pk
+
+  // ── TINS ──
+  'Tinned tomatoes x4':           '252888323',   // Tesco Italian Chopped 4x400g
+  'Tinned tomatoes x2':           '251825089',   // Tesco Italian Chopped 400g
+  'Coconut milk x2':              '289660927',   // Tesco Coconut Milk 400ml
+  'Tinned black beans x2':        '297021336',   // Tesco Black Beans 400g
+  'Tinned chickpeas x2':          '262490576',   // Tesco Chickpeas In Water 400g
+  'Red lentils (500g)':           '256534728',   // Tesco Red Split Lentils 500g
+
+  // ── PIZZA ──
+  'Pizza bases x2':               null,
+  'Mozzarella x2':                null,
+
+  // ── FRESH PRODUCE (loose = no stable ID) ──
+  'Onions x4':                    null,
+  'Sweet potatoes x4':            null,
+  'Mixed peppers x4':             '253557731',   // Tesco Mixed Peppers 3 Pack
+  'Garlic bulbs x2':              '315384380',   // Tesco Garlic 4 Pack
+  'Frozen spinach (500g)':        null,
+  'Halloumi (225g)':              '295580293',   // Tesco Halloumi 225g
+
+  // ── STAPLES ──
+  'Frozen mixed veg (800g)':      '264226012',   // Tesco Mixed Vegetables 1kg
+  'Olive oil (500ml)':            '254918418',   // Tesco Olive Oil 500ml
+  'Mixed dried herbs':            null,
+  'Soy sauce (150ml)':            '294781229',   // Tesco Light Soy Sauce 150ml
+
+  // ── DUPLICATES (referenced in different places) ──
+  'Free-range eggs x6':           '250802613',
+  'Butter (250g)':                '290921181',
+  'Oat milk (1L)':                '280832278',
+};
+
+
+function tescoLink(name) {
+  var pid = TESCO_PRODUCTS[name];
+  return pid ? 'https://www.tesco.com/groceries/en-GB/products/' + pid
+             : 'https://www.tesco.com/groceries/en-GB/search?query=' + encodeURIComponent(name);
+}
+
+function tescoBadge(name) {
+  var pid = TESCO_PRODUCTS[name];
+  return pid
+    ? '<span style="font-size:9px;background:rgba(126,171,138,0.15);color:var(--sage);padding:1px 6px;border-radius:10px;flex-shrink:0">direct</span>'
+    : '<span style="font-size:9px;color:var(--muted);flex-shrink:0">search</span>';
+}
+
+function tescoUrl(q) {
+  var pid = TESCO_PRODUCTS[q];
+  if (pid) return 'https://www.tesco.com/groceries/en-GB/products/' + pid;
+  // Search fallback
+  return 'https://www.tesco.com/groceries/en-GB/search?query=' + encodeURIComponent(q);
+}
+
+function showPage(id) {
+  qsa('.page').forEach(function(p){p.classList.remove('active');});
+  g(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── MEAL PICKER ───────────────────────────────────────────────
+function pickMeals() {
+  var diets=P.diets||[], allergens=P.allergens||[], bl=dislikeLabels(), budget=P.budget||40;
+  var pool = MEALS.filter(function(m) {
+    if(m.cost>(budget/7)*1.4) return false;
+    if(diets.indexOf('vegan')!==-1 && m.flags.indexOf('vegan')===-1) return false;
+    else if(diets.indexOf('vegetarian')!==-1 && diets.indexOf('vegan')===-1 && m.flags.indexOf('veggie')===-1) return false;
+    else if(diets.indexOf('pescatarian')!==-1 && diets.indexOf('vegan')===-1 && diets.indexOf('vegetarian')===-1) {
+      if(m.flags.indexOf('veggie')===-1 && m.flags.indexOf('fish')===-1) return false;
+    }
+    if(diets.indexOf('gluten-free')!==-1 && m.flags.indexOf('gluten-free')===-1) return false;
+    if(diets.indexOf('dairy-free')!==-1 && m.flags.indexOf('dairy-free')===-1) return false;
+    if(diets.indexOf('nut-free')!==-1 && m.flags.indexOf('nut-free')===-1) return false;
+    if(diets.indexOf('halal')!==-1 && m.flags.indexOf('halal')===-1) return false;
+    if(diets.indexOf('low-carb')!==-1 && m.flags.indexOf('low-carb')===-1) return false;
+    if(allergens.indexOf('Fish')!==-1 && m.flags.indexOf('fish')!==-1) return false;
+    if(allergens.indexOf('Milk')!==-1 && m.flags.indexOf('dairy-free')===-1) return false;
+    if(allergens.indexOf('Peanuts')!==-1 && m.flags.indexOf('nut-free')===-1) return false;
+    if(allergens.indexOf('Tree nuts')!==-1 && m.flags.indexOf('nut-free')===-1) return false;
+    if(hasBanned(m.d+' '+m.l, bl)) return false;
+    return true;
+  });
+  if(pool.length<7) pool=MEALS.filter(function(m){
+    if(diets.indexOf('vegan')!==-1 && m.flags.indexOf('vegan')===-1) return false;
+    if(allergens.indexOf('Fish')!==-1 && m.flags.indexOf('fish')!==-1) return false;
+    return true;
+  });
+  var shuffled=pool.slice().sort(function(){return Math.random()-0.5;});
+  var picked=[],tagCount={};
+  shuffled.forEach(function(m){if(picked.length>=7)return;if((tagCount[m.tag]||0)<2){picked.push(m);tagCount[m.tag]=(tagCount[m.tag]||0)+1;}});
+  shuffled.forEach(function(m){if(picked.length>=7)return;if(picked.indexOf(m)===-1)picked.push(m);});
+  return picked.slice(0,7).map(function(m,i){return{day:DAYS[i],dinner:m.d,lunch:m.l,time:m.t,cost:m.cost,tag:m.tag};});
+}
+
+// ── GROCERY LIST ──────────────────────────────────────────────
+function buildGroceries() {
+  var b=getBS(), seen={}, items=[];
+  function add(n,s){if(!seen[n]){seen[n]=1;items.push({name:n,search:s||n});}}
+  var bList=bsItems(b,P);
+  bList.forEach(function(n){add(n);});
+  M.forEach(function(m){
+    var n=m.dinner.toLowerCase();
+    if(n.indexOf('chicken')!==-1)                                  add('Chicken thighs (1kg)','chicken thighs 1kg');
+    if(n.indexOf('salmon')!==-1)                                   add('Salmon fillets x2','salmon fillets');
+    if(n.indexOf('beef')!==-1||n.indexOf('bolognese')!==-1)       add('Beef mince (500g)','beef mince 500g');
+    if(n.indexOf('pork')!==-1||n.indexOf('sausage')!==-1)         add('Pork sausages x8','pork sausages');
+    if(n.indexOf('turkey')!==-1)                                   add('Turkey mince (500g)','turkey mince');
+    if(n.indexOf('prawn')!==-1)                                    add('King prawns (300g)','king prawns');
+    if(n.indexOf('cod')!==-1)                                      add('Cod fillets x2','cod fillets');
+    if(n.indexOf('pasta')!==-1||n.indexOf('bolognese')!==-1||n.indexOf('arrabiata')!==-1) {
+      var diets2=(P||{}).diets||[];
+      if(diets2.indexOf('gluten-free')!==-1) add('Pasta (500g) [GF]','gluten free pasta 500g');
+      else add('Pasta (500g)','pasta dried 500g');
+    }
+    if(n.indexOf('rice')!==-1||n.indexOf('curry')!==-1||n.indexOf('dhal')!==-1||n.indexOf('stir')!==-1||n.indexOf('fried')!==-1) add('Basmati rice (1kg)','basmati rice 1kg');
+    if(n.indexOf('noodle')!==-1||n.indexOf('stir')!==-1)          add('Egg noodles (300g)','egg noodles 300g');
+    if(n.indexOf('taco')!==-1||n.indexOf('fajita')!==-1||n.indexOf('wrap')!==-1||n.indexOf('quesadilla')!==-1) add('Tortilla wraps x8','tortilla wraps');
+    if(n.indexOf('pizza')!==-1)                                    add('Pizza bases x2','pizza bases');
+    if(n.indexOf('pizza')!==-1)                                    add('Mozzarella x2','mozzarella 125g');
+    if(n.indexOf('tomato')!==-1||n.indexOf('curry')!==-1||n.indexOf('dhal')!==-1||n.indexOf('shakshuka')!==-1) add('Tinned tomatoes x4','tinned tomatoes');
+    if(n.indexOf('curry')!==-1||n.indexOf('thai')!==-1)           add('Coconut milk x2','coconut milk 400ml');
+    if(n.indexOf('bean')!==-1||n.indexOf('chilli')!==-1)          add('Tinned black beans x2','black beans tin');
+    if(n.indexOf('chickpea')!==-1||n.indexOf('hummus')!==-1||n.indexOf('falafel')!==-1) add('Tinned chickpeas x2','chickpeas tin');
+    if(n.indexOf('lentil')!==-1||n.indexOf('dhal')!==-1)          add('Red lentils (500g)','red lentils 500g');
+    if(n.indexOf('stir')!==-1||n.indexOf('noodle')!==-1)          add('Soy sauce (150ml)','soy sauce');
+    if(n.indexOf('halloumi')!==-1)                                 add('Halloumi (225g)','halloumi');
+    if(n.indexOf('sweet potato')!==-1)                             add('Sweet potatoes x4','sweet potatoes');
+    if(n.indexOf('pepper')!==-1||n.indexOf('fajita')!==-1)        add('Mixed peppers x4','mixed peppers');
+    if(n.indexOf('spinach')!==-1)                                  add('Frozen spinach (500g)','frozen spinach');
+  });
+  add('Frozen mixed veg (800g)','frozen mixed vegetables');
+  add('Olive oil (500ml)','olive oil 500ml');
+  add('Garlic bulbs x2','garlic bulb');
+  add('Onions x4','onions');
+  add('Mixed dried herbs','mixed herbs');
+  add('Tinned tomatoes x2','tinned tomatoes');
+  var diets=(P||{}).diets||[];
+  var isVegan=diets.indexOf('vegan')!==-1, isDairyFree=diets.indexOf('dairy-free')!==-1;
+  if(!isVegan) add('Free-range eggs x6','free range eggs 6');
+  if(!isVegan && !isDairyFree) add('Butter (250g)','unsalted butter 250g');
+  if(isVegan||isDairyFree) add('Oat milk (1L)','oat milk 1 litre');
+  return items;
+}
+
+// ── ONBOARDING ────────────────────────────────────────────────
+var OB_STEPS = [
+  {
+    title:'How many people?',
+    sub:"We'll scale every recipe and list automatically.",
+    body:function(){
+      return [1,2,3,4,5,6].map(function(n){
+        var on=OB.people===n;
+        return '<button class="choice'+(on?' on':'')+'" data-pick="people" data-v="'+n+'"><span>'+n+' '+(n===1?'person':'people')+'</span>'+(on?'<span class="gold" style="margin-left:auto">✓</span>':'')+'</button>';
+      }).join('');
+    }
+  },
+  {
+    title:'Pick your breakfast',
+    sub:'Same every day. Added to your shopping list automatically.',
+    body:function(){
+      var available=compatibleBreakfasts(OB.diets);
+      if(!available.find(function(b){return b.id===OB.bfId;})&&available.length>0) OB.bfId=available[0].id;
+      return available.map(function(b){
+        var on=OB.bfId===b.id;
+        return '<button class="choice'+(on?' on':'')+'" data-pick="bf" data-v="'+b.id+'" style="align-items:flex-start;gap:12px">'
+          +'<span style="font-size:22px;flex-shrink:0;margin-top:1px">'+b.icon+'</span>'
+          +'<span style="flex:1;text-align:left"><span style="display:block;font-size:13px">'+b.label+'</span><span style="display:block;font-size:11px;color:var(--muted);margin-top:2px">'+b.desc+' · '+b.time+'</span></span>'
+          +(on?'<span class="gold" style="flex-shrink:0">✓</span>':'')
+          +'</button>';
+      }).join('');
+    }
+  },
+  {
+    title:'Dietary requirements?',
+    sub:'Respected every week. Select all that apply.',
+    body:function(){
+      return DIETS.map(function(d){
+        var on=OB.diets.indexOf(d.id)!==-1;
+        return '<button class="choice'+(on?' on':'')+'" data-tog="diet" data-v="'+d.id+'" style="gap:10px">'
+          +'<span style="font-size:18px;width:24px;text-align:center;flex-shrink:0">'+d.icon+'</span>'
+          +'<span style="flex:1;text-align:left"><span style="display:block;font-size:13px;color:'+(on?d.color:'inherit')+'">'+d.label+'</span><span style="display:block;font-size:11px;color:var(--muted)">'+d.desc+'</span></span>'
+          +(on?'<span style="color:'+d.color+';flex-shrink:0">✓</span>':'')
+          +'</button>';
+      }).join('')
+      +'<button class="btn btn-ghost mt8" data-skip="1" style="font-size:12px">No requirements — skip →</button>';
+    }
+  },
+  {
+    title:'Allergens to avoid?',
+    sub:'Hard exclusions — never in your plan or list.',
+    body:function(){
+      return '<div class="card card-rose mb12" style="font-size:12px;line-height:1.5;padding:10px 12px">⚠ Permanent exclusions for your whole household</div>'
+        +'<div class="grid2">'
+        +ALLERGENS.map(function(a){
+          var on=OB.allergens.indexOf(a)!==-1;
+          return '<button class="choice'+(on?' on':'')+'" data-tog="allergen" data-v="'+a+'" style="margin-bottom:7px;border-color:'+(on?'rgba(212,126,139,0.4)':'rgba(255,255,255,0.09)')+';background:'+(on?'rgba(212,126,139,0.08)':'var(--s2)')+';color:'+(on?'var(--rose)':'var(--text)')+';font-size:12px;padding:9px 11px">'+a+(on?' <span>⚠</span>':'')+'</button>';
+        }).join('')
+        +'</div>'
+        +'<button class="btn btn-ghost mt8" data-skip="1" style="font-size:12px">No allergens — skip →</button>';
+    }
+  },
+  {
+    title:"What don't you like?",
+    sub:"Not an allergy — just food you'd rather never see on your plate.",
+    body:function(){
+      var labels=OB.dislikes.map(function(id){var c=DISLIKES.find(function(d){return d.id===id;});return{id:id,label:c?c.label:(id.charAt(0).toUpperCase()+id.slice(1))};});
+      return (labels.length?'<div class="card mb12" style="padding:10px 12px"><span class="lbl">Won\'t eat ('+labels.length+')</span><div style="display:flex;flex-wrap:wrap;gap:6px">'+labels.map(function(l){return '<span class="pill" style="background:rgba(176,168,152,0.1);color:var(--text2);border:1px solid rgba(176,168,152,0.2)">'+l.label+' <button data-rm="'+l.id+'" style="background:transparent;border:none;color:var(--muted);font-size:11px;padding:0;cursor:pointer">✕</button></span>';}).join('')+'</div></div>':'')
+        +'<div style="display:flex;gap:7px;background:var(--s2);border-radius:var(--radius);border:1px solid rgba(255,255,255,0.09);padding:4px 4px 4px 12px;margin-bottom:8px">'
+        +'<input class="inp" id="dl-inp" type="text" placeholder="Type anything you do not like..." style="border:none;background:transparent;padding:8px 0;flex:1">'
+        +'<button class="btn btn-gold btn-sm" id="dl-add" style="flex-shrink:0">Add</button>'
+        +'</div><p class="muted mb12" style="font-size:11px">Press Enter to add</p>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+        +DISLIKES.map(function(d){
+          var on=OB.dislikes.indexOf(d.id)!==-1;
+          return '<button data-tog="dislike" data-v="'+d.id+'" style="padding:5px 10px;border-radius:20px;background:'+(on?'rgba(176,168,152,0.12)':'transparent')+';border:1px solid '+(on?'rgba(176,168,152,0.3)':'rgba(255,255,255,0.09)')+';color:'+(on?'var(--text2)':'var(--muted)')+';font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px">'+d.icon+' '+d.label+(on?' <span style="font-size:9px">✕</span>':'')+'</button>';
+        }).join('')+'</div>';
+    },
+    afterRender:function(){
+      var inp=g('dl-inp');
+      function addDl(){var v=inp.value.trim().toLowerCase();if(v&&OB.dislikes.indexOf(v)===-1)OB.dislikes.push(v);inp.value='';obRender();}
+      g('dl-add').addEventListener('click',addDl);
+      inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addDl();}});
+    }
+  },
+  {
+    title:'Weekly food budget?',
+    sub:'Per person, per week — all 3 meals.',
+    body:function(){
+      return '<div style="text-align:center;margin:14px 0 16px">'
+        +'<div style="font-size:52px;font-weight:700;font-family:var(--serif);color:var(--gold)" id="bdisp">£'+OB.budget+'</div>'
+        +'<div class="muted" style="font-size:12px;margin-top:3px">per person · = £'+Math.round(OB.budget*OB.people)+'/week total</div>'
+        +'</div>'
+        +'<input type="range" min="20" max="80" step="5" value="'+OB.budget+'" id="brange" style="width:100%;accent-color:var(--gold);margin-bottom:12px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px"><span>£20</span><span>£80</span></div>'
+        +[{n:25,l:'Super budget'},{n:35,l:'Budget friendly'},{n:45,l:'Comfortable'},{n:60,l:'Premium'}].map(function(o){
+          return '<button class="choice'+(OB.budget===o.n?' on':'')+'" data-pick="budget" data-v="'+o.n+'" style="justify-content:space-between"><span>£'+o.n+'/person</span><span class="muted">'+o.l+'</span></button>';
+        }).join('');
+    },
+    afterRender:function(){
+      g('brange').addEventListener('input',function(e){
+        OB.budget=Number(e.target.value);
+        g('bdisp').textContent='£'+OB.budget;
+        qsa('[data-pick="budget"]').forEach(function(b){b.classList.toggle('on',Number(b.dataset.v)===OB.budget);});
+      });
+    }
+  },
+];
+
+function obRender() {
+  var step=OB_STEPS[OB.step], total=OB_STEPS.length;
+  g('ob-step-lbl').textContent=(OB.step+1)+' / '+total;
+  g('ob-prog').style.width=Math.round((OB.step+1)/total*100)+'%';
+  g('ob-next').textContent=OB.step===total-1?'✦ Build my plan →':'Continue →';
+  g('ob-back').style.display=OB.step>0?'block':'none';
+
+  var main=g('ob-main');
+  main.innerHTML='<h2 class="serif" style="font-size:20px;font-weight:700;line-height:1.3;margin-bottom:5px">'+step.title+'</h2>'
+    +'<p class="shsub">'+step.sub+'</p>'+step.body();
+  main.classList.add('fade'); setTimeout(function(){main.classList.remove('fade');},250);
+
+  // Wire pickers
+  qsa('[data-pick]',main).forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var pick=btn.dataset.pick,v=btn.dataset.v;
+      if(pick==='people') OB.people=Number(v);
+      if(pick==='bf')     OB.bfId=v;
+      if(pick==='budget') OB.budget=Number(v);
+      obRender();
+    });
+  });
+  // Wire toggles
+  qsa('[data-tog]',main).forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var tog=btn.dataset.tog,v=btn.dataset.v;
+      if(tog==='diet'){
+        var i=OB.diets.indexOf(v);
+        if(i!==-1) OB.diets.splice(i,1);
+        else{OB.diets.push(v);if(v==='vegan')OB.diets=OB.diets.filter(function(x){return x!=='vegetarian'&&x!=='pescatarian';});if(v==='vegetarian')OB.diets=OB.diets.filter(function(x){return x!=='vegan'&&x!=='pescatarian';});if(v==='pescatarian')OB.diets=OB.diets.filter(function(x){return x!=='vegan'&&x!=='vegetarian';});}
+      }
+      if(tog==='allergen'){var ai=OB.allergens.indexOf(v);if(ai!==-1)OB.allergens.splice(ai,1);else OB.allergens.push(v);}
+      if(tog==='dislike'){var di=OB.dislikes.indexOf(v);if(di!==-1)OB.dislikes.splice(di,1);else OB.dislikes.push(v);}
+      obRender();
+    });
+  });
+  qsa('[data-skip]',main).forEach(function(btn){btn.addEventListener('click',function(){OB.step++;obRender();});});
+  qsa('[data-rm]',main).forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();OB.dislikes=OB.dislikes.filter(function(x){return x!==btn.dataset.rm;});obRender();});});
+  if(step.afterRender) step.afterRender();
+}
+
+g('ob-next').addEventListener('click',function(){
+  if(OB.step<OB_STEPS.length-1){OB.step++;obRender();}
+  else obFinish();
+});
+g('ob-back').addEventListener('click',function(){if(OB.step>0){OB.step--;obRender();}});
+
+function obFinish() {
+  P={people:OB.people,bfId:OB.bfId,diets:OB.diets,allergens:OB.allergens,dislikes:OB.dislikes,budget:OB.budget,planAt:Date.now()};
+  M=pickMeals(); save(); startApp();
+}
+
+// ── APP ───────────────────────────────────────────────────────
+function startApp() {
+  g('app-nav').classList.add('visible');
+  g('app-topbar-right').innerHTML='<span style="font-size:11px;color:var(--muted);background:var(--s2);padding:2px 9px;border-radius:20px;border:1px solid var(--border)">'+P.people+' '+(P.people===1?'person':'people')+'</span>';
+  showPage('page-app');
+  goTab('home');
+}
+
+qsa('.nav-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){goTab(btn.dataset.tab);});
+});
+
+function goTab(tab) {
+  TAB=tab;
+  qsa('.nav-btn').forEach(function(b){b.classList.toggle('on',b.dataset.tab===tab);});
+  var renders={home:tabHome,plan:tabPlan,shop:tabShop,savings:tabSavings,settings:tabSettings};
+  var main=g('app-main');
+  if(renders[tab]){renders[tab](main);}
+  main.classList.add('fade'); setTimeout(function(){main.classList.remove('fade');},250);
+  main.scrollTop=0;
+}
+
+// ── HOME TAB ──────────────────────────────────────────────────
+function tabHome(root) {
+  var now=new Date(), abbrs=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var today=M.find(function(m){return m.day===abbrs[now.getDay()];})||M[0]||{dinner:'No meals planned',lunch:'—',time:'—',cost:2};
+  var b=getBS(), davg=M.reduce(function(s,m){return s+(m.cost||2.5);},0)/(M.length||1);
+  var wFood=Math.round((davg+b.cost+0.5)*7*P.people), wOut=Math.round(P.people*7*18);
+  var age=P.planAt?Math.floor((Date.now()-P.planAt)/864e5):999;
+
+  root.innerHTML='<p class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em">'+names[now.getDay()]+', '+now.toLocaleDateString('en-GB',{day:'numeric',month:'long'})+'</p>'
+    +'<h1 class="serif" style="font-size:24px;font-weight:700;margin:3px 0 14px">Good morning</h1>'
+    +(age>=7?'<div class="card card-gold row mb12" style="gap:10px;padding:11px 13px"><span style="font-size:18px">📅</span><div style="flex:1"><p style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:2px">New week — time to plan</p><p class="muted" style="font-size:11px">Tap Plan to refresh your meals</p></div><button class="btn btn-gold btn-sm" id="h-plan-btn">Plan →</button></div>':'')
+    +'<div class="card card-dark mb12" style="padding:18px 16px">'
+    +'<p class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em">Weekly saving</p>'
+    +'<div class="serif" style="font-size:48px;font-weight:700;color:var(--gold);line-height:1;margin:5px 0 3px">£'+(wOut-wFood)+'</div>'
+    +'<p class="muted" style="font-size:12px">vs eating every meal out · '+P.people+' '+(P.people===1?'person':'people')+'</p>'
+    +'</div>'
+    +'<p class="sh">Today</p>'
+    +'<div class="card row mb8 mt8" style="padding:11px 13px;gap:11px">'
+    +'<span style="font-size:22px">'+b.icon+'</span>'
+    +'<div style="flex:1"><p class="gold" style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Breakfast</p><p style="font-weight:500;font-size:13px">'+b.label+'</p></div>'
+    +'<p class="gold" style="font-size:12px;font-weight:600;flex-shrink:0">£'+(b.cost*P.people).toFixed(2)+'</p>'
+    +'</div>'
+    +'<div class="grid2 mb14">'
+    +'<div class="card" style="padding:11px 12px"><p class="sage lbl">Lunch</p><p style="font-size:12px;font-weight:500;line-height:1.35;margin-bottom:4px">'+today.lunch+'</p><p class="sage" style="font-size:11px;font-weight:600">Free ♻</p></div>'
+    +'<div class="card" style="padding:11px 12px"><p class="muted lbl">Dinner</p><p style="font-size:12px;font-weight:500;line-height:1.35;margin-bottom:4px">'+today.dinner+'</p><p class="gold" style="font-size:11px;font-weight:600">£'+((today.cost||2.5)*P.people).toFixed(2)+'</p></div>'
+    +'</div>'
+    +'<button class="btn btn-gold mb8" id="h-to-plan">📅 '+(age>=7?'Refresh this week':'View this week')+'</button>'
+    +'<div class="grid2">'
+    +'<button class="btn btn-surface" id="h-to-shop">🛒 Shop</button>'
+    +'<button class="btn btn-surface" id="h-to-sav">💰 Savings</button>'
+    +'</div>';
+
+  var hpb=g('h-plan-btn'); if(hpb) hpb.addEventListener('click',function(){goTab('plan');});
+  g('h-to-plan').addEventListener('click',function(){goTab('plan');});
+  g('h-to-shop').addEventListener('click',function(){goTab('shop');});
+  g('h-to-sav').addEventListener('click',function(){goTab('savings');});
+}
+
+// ── PLAN TAB ──────────────────────────────────────────────────
+function tabPlan(root) {
+  var b=getBS(), davg=M.reduce(function(s,m){return s+(m.cost||2.5);},0);
+  var dCost=(davg*P.people).toFixed(2), bCost=(b.cost*P.people*7).toFixed(2);
+  var total=((davg+b.cost*7+0.5*7)*P.people).toFixed(2);
+  var age=P.planAt?Math.floor((Date.now()-P.planAt)/864e5):999;
+
+  root.innerHTML='<p class="sh">This Week\'s Plan</p>'
+    +'<p class="shsub">~£'+total+' total · all 3 meals'+(age<7?' · '+(age===0?'today':age+'d ago'):'')+'</p>'
+    +'<div class="card card-dark mb12" style="padding:13px 14px">'
+    +'<div class="row mb8"><span style="font-size:22px">'+b.icon+'</span><div style="flex:1"><p class="gold" style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Breakfast · every day</p><p style="font-size:14px;font-weight:600">'+b.label+'</p></div><span class="gold" style="font-size:12px;font-weight:600;flex-shrink:0">£'+bCost+'</span></div>'
+    +'<p class="muted" style="font-size:10px;border-top:1px solid rgba(255,255,255,0.07);padding-top:8px">'+bsItems(b,P).join(' · ')+'</p>'
+    +'</div>'
+    +'<div class="grid3 mb12">'
+    +[{l:'Breakfast',v:'£'+bCost,c:'var(--gold)'},{l:'Lunch',v:'£0',c:'var(--sage)'},{l:'Dinner',v:'£'+dCost,c:'var(--gold)'}].map(function(s){
+      return '<div class="card" style="padding:9px 10px"><p class="muted" style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">'+s.l+'</p><p style="font-size:14px;font-weight:700;color:'+s.c+'">'+s.v+'</p><p class="muted" style="font-size:9px">per week</p></div>';
+    }).join('')
+    +'</div>'
+    +'<button class="btn btn-gold mb14" id="p-regen">✦ Regenerate meals</button>'
+    +'<div id="p-meals">'
+    +M.map(function(m){
+      return '<div class="card mb8" style="padding:12px 13px">'
+        +'<div class="row mb8" style="border-bottom:1px solid var(--border);padding-bottom:8px;gap:6px;flex-wrap:wrap">'
+        +'<span style="font-size:11px;font-weight:800;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase">'+m.day+'</span>'
+        +'<span class="tag" style="background:var(--s3);color:var(--text2)">'+m.tag+'</span>'
+        +'</div>'
+        +'<div class="row mb8" style="gap:9px"><span style="font-size:14px">🍽</span><div style="flex:1"><p style="font-size:13px;font-weight:600">'+m.dinner+'</p><p class="muted" style="font-size:10px;margin-top:1px">⏱ '+m.time+' · £'+((m.cost||2.5)*P.people).toFixed(2)+'</p></div></div>'
+        +'<div class="row" style="background:var(--s2);border-radius:9px;padding:8px 10px;gap:9px">'
+        +'<span style="font-size:13px">🥡</span><div style="flex:1"><p class="sage" style="font-size:9px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1px">Tomorrow\'s lunch</p><p style="font-size:12px">'+m.lunch+'</p></div>'
+        +'<span class="tag" style="background:var(--sage-bg);color:var(--sage);flex-shrink:0">Free</span>'
+        +'</div></div>';
+    }).join('')
+    +'</div>'
+    +'<button class="btn btn-sage mt8" id="p-to-shop">🛒 Build shopping list →</button>';
+
+  g('p-regen').addEventListener('click',function(){
+    var btn=g('p-regen'); btn.disabled=true; btn.textContent='Picking meals...';
+    setTimeout(function(){M=pickMeals();P.planAt=Date.now();save();goTab('plan');},350);
+  });
+  g('p-to-shop').addEventListener('click',function(){goTab('shop');});
+}
+
+// ── SHOP TAB ──────────────────────────────────────────────────
+function tabShop(root) {
+  var items=buildGroceries(), b=getBS();
+  var checkedCount=Object.values(shopChecked).filter(Boolean).length;
+
+  root.innerHTML='<p class="sh">Shopping</p>'
+    +'<p class="shsub">All 3 meals covered · '+items.length+' items</p>'
+
+    // Install banner for extension
+    +'<div class="install-banner mb14">'
+    +'<span style="font-size:18px;flex-shrink:0">⚡</span>'
+    +'<div class="install-banner-text"><b style="color:var(--sky)">Want fully automatic basket filling?</b> The free Chrome extension adds every item to your Tesco basket automatically — no clicking needed. <a href="https://chromewebstore.google.com" target="_blank" style="color:var(--sky);font-weight:600">Get the extension →</a></div>'
+    +'</div>'
+
+    // Guided shopping mode CTA
+    +'<div class="card card-dark mb12" style="padding:14px 15px">'
+    +'<p class="gold" style="font-size:14px;font-weight:700;margin-bottom:5px">✦ Guided shopping mode</p>'
+    +'<p class="muted mb12" style="font-size:12px;line-height:1.6">Opens each item on Tesco one by one. You add it, tap Next. Done in a few minutes. Always check your basket before checkout.</p>'
+    +'<button class="btn btn-gold" id="sh-guided">Start shopping on Tesco →</button>'
+    +'</div>'
+
+    // Copy list
+    +'<div class="row-sb mb10">'
+    +'<p style="font-size:13px;font-weight:600">Your list</p>'
+    +'<div style="display:flex;gap:7px">'
+    +'<button class="btn btn-surface btn-sm" id="sh-copy">Copy list</button>'
+    +'<button class="btn btn-surface btn-sm" id="sh-share">Share</button>'
+    +'</div></div>'
+
+    // Breakfast section
+    +'<div class="card mb8" style="padding:11px 13px">'
+    +'<p class="gold" style="font-size:10px;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:9px">Breakfast — '+b.label+'</p>'
+    +bsItems(b,P).map(function(name,i){
+      var key='b'+i, chk=shopChecked[key];
+      var burl = tescoLink(name);
+      var bbadge = tescoBadge(name);
+      return '<div class="row" style="padding:6px 0;border-bottom:1px solid var(--border);gap:9px">'
+        +'<button data-chk="'+key+'" class="shop-check'+(chk?' done':'')+'">'+( chk?'<span style="color:#0C0A08;font-size:10px;font-weight:900">✓</span>':'')+'</button>'
+        +'<a href="'+burl+'" target="_blank" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:space-between;gap:6px">'
+        +'<span style="font-size:12px;color:'+(chk?'var(--muted)':'var(--text)')+';text-decoration:'+(chk?'line-through':'none')+'">'+name+'</span>'
+        +'<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">'+bbadge+'<span class="gold" style="font-size:10px">↗</span></div>'
+        +'</a></div>';
+    }).join('')+'</div>'
+
+    // Dinner/staple items
+    +'<div class="card" style="padding:11px 13px">'
+    +'<p class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:9px">Dinners & staples</p>'
+    +items.filter(function(item){return !bsItems(b,P).includes(item.name);}).map(function(item,i){
+      var chk=shopChecked[i];
+      return '<div class="row" style="padding:6px 0;border-bottom:1px solid var(--border);gap:9px">'
+        +'<button data-chk="'+i+'" class="shop-check'+(chk?' done':'')+'">'+( chk?'<span style="color:#0C0A08;font-size:10px;font-weight:900">✓</span>':'')+'</button>'
+        +'<a href="'+tescoLink(item.name)+'" target="_blank" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:space-between;gap:6px">'
+      +'<span style="font-size:12px;color:'+(chk?'var(--muted)':'var(--text)')+';text-decoration:'+(chk?'line-through':'none')+'">'+item.name+'</span>'
+      +'<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">'+tescoBadge(item.name)+'<span class="gold" style="font-size:10px">↗</span></div>'
+      +'</a></div>';
+    }).join('')
+    +'</div>'
+
+    +'<div style="margin-top:12px;text-align:center">'
+    +'<a href="https://www.tesco.com/groceries/en-GB/trolley" target="_blank" class="btn btn-sage">Review basket on Tesco →</a>'
+    +'</div>';
+
+  // Guided mode
+  g('sh-guided').addEventListener('click',function(){
+    shopModeItems=buildGroceries();
+    shopModeIndex=0;
+    showPage('page-shopping');
+    renderShopMode();
+  });
+
+  // Check toggles
+  qsa('.shop-check',root).forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var k=btn.dataset.chk;
+      shopChecked[k]=!shopChecked[k];
+      tabShop(root);
+    });
+  });
+
+  // Copy
+  g('sh-copy').addEventListener('click',function(){
+    var b2=getBS();
+    var lines=['Fridge to Fork — Shopping List','','Breakfast: '+b2.label+' (every day)',''].concat(buildGroceries().map(function(i){return '• '+i.name;}));
+    navigator.clipboard.writeText(lines.join('\n')).then(function(){
+      var btn=g('sh-copy'); if(btn){btn.textContent='Copied ✓';setTimeout(function(){if(g('sh-copy'))g('sh-copy').textContent='Copy list';},2000);}
+    }).catch(function(){alert('Copy: '+lines.join('\n'));});
+  });
+
+  // Share
+  g('sh-share').addEventListener('click',function(){
+    var b2=getBS();
+    var text='My Fridge to Fork shopping list:\n\nBreakfast: '+b2.label+'\n\n'+buildGroceries().map(function(i){return '• '+i.name;}).join('\n');
+    if(navigator.share){navigator.share({title:'My shopping list',text:text});}
+    else{navigator.clipboard.writeText(text).then(function(){var btn=g('sh-share');if(btn){btn.textContent='Copied ✓';setTimeout(function(){if(g('sh-share'))g('sh-share').textContent='Share';},2000);}});}
+  });
+}
+
+// ── SHOPPING MODE ─────────────────────────────────────────────
+
+function openInTesco(url) {
+  if (tescoWin && !tescoWin.closed) {
+    tescoWin.location.href = url;
+  } else {
+    tescoWin = window.open(url, 'ftf_tesco');
+  }
+}
+
+function renderShopMode() {
+  var items = shopModeItems;
+  var total = items.length;
+  var idx   = shopModeIndex;
+  g('shop-mode-count').textContent = (idx + 1) + ' / ' + total;
+
+  // ── ALL DONE ──
+  if (idx >= total) {
+    g('shop-mode-content').innerHTML =
+      '<div style="padding:40px 20px;text-align:center">'
+      + '<div style="width:56px;height:56px;border-radius:50%;background:var(--sage-bg);border:1px solid var(--sage-bd);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">✓</div>'
+      + '<h2 class="serif" style="font-size:22px;font-weight:700;margin-bottom:8px">All done!</h2>'
+      + '<p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:20px">All items searched. Check your basket on Tesco before checkout.</p>'
+      + '<a href="https://www.tesco.com/groceries/en-GB/trolley" target="_blank" class="btn btn-sage mb10" style="text-decoration:none;display:flex">Review basket on Tesco →</a>'
+      + '<button class="btn btn-ghost" id="sm-done">← Back to list</button>'
+      + '</div>';
+    g('sm-done').addEventListener('click', function(){ showPage('page-app'); goTab('shop'); });
+    return;
+  }
+
+  var item = items[idx];
+  var url  = tescoLink(item.name);
+  var pct  = Math.round(idx / total * 100);
+
+  g('shop-mode-content').innerHTML =
+    // Progress
+    '<div style="padding:14px 16px 0">'
+    + '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:7px">'
+    + '<span>Item ' + (idx + 1) + ' of ' + total + '</span>'
+    + '<span class="gold">' + pct + '% done</span>'
+    + '</div>'
+    + '<div class="prog-wrap"><div class="prog-bar" style="width:' + pct + '%"></div></div>'
+    + '</div>'
+
+    // All items as chips
+    + '<div style="padding:10px 16px 0;display:flex;flex-wrap:wrap;gap:5px">'
+    + items.map(function(it, i) {
+        var done = i < idx, cur = i === idx;
+        return '<span style="font-size:10px;padding:2px 8px;border-radius:20px;'
+          + 'background:' + (cur ? 'var(--gold)' : done ? 'rgba(126,171,138,0.15)' : 'var(--s2)') + ';'
+          + 'color:' + (cur ? '#0C0A08' : done ? 'var(--sage)' : 'var(--muted)') + ';'
+          + 'font-weight:' + (cur ? '700' : '400') + ';'
+          + 'text-decoration:' + (done ? 'line-through' : 'none') + '">'
+          + (done ? '✓ ' : '') + it.name + '</span>';
+      }).join('')
+    + '</div>'
+
+    // Current item card
+    + '<div style="margin:12px 16px 0;background:var(--s1);border:1px solid var(--gold-bd);border-radius:16px;padding:20px">'
+    + '<div class="serif" style="font-size:22px;font-weight:700;margin-bottom:6px">' + item.name + '</div>'
+    + '<p class="muted" style="font-size:12px">Tap below to open Tesco, add it to your basket, then come back here.</p>'
+    + '</div>'
+
+    // Open Tesco button
+    + '<div style="padding:12px 16px 6px">'
+    + '<button class="btn btn-gold" id="sm-open" style="font-size:15px;font-weight:700">Open on Tesco ↗</button>'
+    + '</div>'
+
+    // Added / Skip
+    + '<div style="padding:4px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:9px">'
+    + '<button class="btn btn-ghost" id="sm-skip">Skip</button>'
+    + '<button class="btn btn-sage" id="sm-added">Added ✓</button>'
+    + '</div>'
+
+    + '<p class="muted" style="font-size:11px;text-align:center;padding:0 16px 16px;line-height:1.6">'
+    + 'Tap Added after adding each item. One Tesco tab stays open throughout.</p>';
+
+  // Open Tesco on button tap (user gesture = never blocked)
+  g('sm-open').addEventListener('click', function() {
+    openInTesco(url);
+  });
+
+  g('sm-added').addEventListener('click', function() {
+    shopModeIndex++;
+    // Pre-load next item while user reads the transition
+    if (shopModeIndex < shopModeItems.length) {
+      openInTesco(tescoLink(shopModeItems[shopModeIndex].name));
+    }
+    renderShopMode();
+  });
+
+  g('sm-skip').addEventListener('click', function() {
+    shopModeIndex++;
+    if (shopModeIndex < shopModeItems.length) {
+      openInTesco(tescoLink(shopModeItems[shopModeIndex].name));
+    }
+    renderShopMode();
+  });
+}
+
+
+</script>
+</body>
+</html>
